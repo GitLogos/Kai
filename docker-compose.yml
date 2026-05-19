@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  kai-web-app:
+    image: ghcr.io/gitlogos/kai-web-app:latest
+    container_name: kai-web-app
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - web-net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+networks:
+  web-net:
+    driver: bridge
