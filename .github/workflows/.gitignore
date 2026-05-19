@@ -1,0 +1,38 @@
+# Ignore Docker-related files in Git
+.Dockerfile
+.dockerignore
+*.tar.gz
+*.tar
+*.tar.bz2
+*.tar.xz
+*.deb
+*.rpm
+*.snap
+*.appimage
+*.app
+*.dmg
+
+# Docker build artifacts
+.Dockerignore
+.docker/
+*.log
+
+# Build cache
+.cache/
+
+# Temporary files
+*.tmp
+
+# Environment files
+.env
+.env.*
+*.pem
+*.key
+
+# IDE
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
