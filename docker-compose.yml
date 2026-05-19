@@ -1,0 +1,36 @@
+# Docker Compose for Kai web app deployment on Portainer
+# Single-container deployment strategy
+
+version: "3.8"
+
+services:
+  kai-web:
+    # Build stage
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    # Production stage
+    image: gitlogos/kai-web:latest
+    container_name: kai-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - kai-network
+    volumes:
+      - ./logs:/var/log/nginx:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - "com.portainer.service=kai-web"
+      - "com.portainer.description=Kai web app (WASM + Nginx)"
+      - "com.portainer.deployment=production"
+
+networks:
+  kai-network:
+    driver: bridge
