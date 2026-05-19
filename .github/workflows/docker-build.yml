@@ -1,0 +1,91 @@
+name: Build and Push Kai Web Docker Image
+
+on:
+  push:
+    branches:
+      - infra
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'composeApp/**'
+      - '.github/workflows/docker-build.yml'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Docker image tag (e.g., v1.0.0, latest, or a version number)'
+        required: false
+        default: 'latest'
+      version:
+        description: 'GitLab Registry version tag'
+        required: false
+        default: 'latest'
+
+env:
+  IMAGE_NAME: 'gitlogos/kai-web'
+  REGISTRY: 'gitlab.io'
+  REGISTRY_USER: '${{ secrets.REGISTRY_USER }}'
+  REGISTRY_PASSWORD: '${{ secrets.REGISTRY_PASSWORD }}'
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Login to Docker Hub / Registry
+      - name: Login to Registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+          registry: ${{ env.REGISTRY }}
+
+      # Build the Docker image
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          platforms:
+            - linux/amd64
+            - linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Build and push with full tag
+      - name: Build and push Docker image
+        id: docker_build_push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          platforms:
+            - linux/amd64
+            - linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:${{ github.ref_name }},${{ env.IMAGE_NAME }}:${{ github.sha }},${{ env.IMAGE_NAME }}:latest
+
+      # Show image digest
+      - name: Show image digest
+        run: echo "${{ steps.docker_build_push.outputs.digest }}"
