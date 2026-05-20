@@ -9,8 +9,8 @@ RUN apk add --no-cache \
 WORKDIR /app
 COPY . .
 
-# Build WASM target (wasmJsBrowser)
-RUN ./gradlew :composeApp:wasmJsBrowser --no-daemon
+# Build WASM production target
+RUN ./gradlew :composeApp:wasmJsBrowserProductionRun --no-daemon
 
 # Production stage - Nginx serving WASM
 FROM nginx:alpine
