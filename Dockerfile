@@ -10,7 +10,7 @@ WORKDIR /app
 COPY . .
 
 # Build WASM production target
-RUN ./gradlew :composeApp:wasmJsBrowserProd --no-daemon
+RUN ./gradlew :composeApp:wasmJsBrowserProductionRun --no-daemon
 
 # Production stage - Nginx serving WASM
 FROM nginx:alpine
